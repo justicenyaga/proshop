@@ -262,36 +262,6 @@ export const loadUser = () => (dispatch) => {
   }
 };
 
-export const authenticateWithGoogle = (state, code) => async (dispatch) => {
-  if (state && code && !localStorage.getItem("access")) {
-    const headers = {
-      "Content-Type": "application/x-www-form-urlencoded",
-    };
-
-    const details = { code, state };
-
-    const formBody = Object.keys(details)
-      .map(
-        (key) =>
-          encodeURIComponent(key) + "=" + encodeURIComponent(details[key])
-      )
-      .join("&");
-
-    await dispatch(
-      apiCallBegun({
-        url: `/api/auth/o/google-oauth2/?${formBody}`,
-        method: "POST",
-        headers,
-        onStart: userAuthRequested.type,
-        onSuccess: userAuthSuccess.type,
-        onError: userAuthFailed.type,
-      })
-    );
-
-    dispatch(loadUser());
-  }
-};
-
 export const login = (email, password) => async (dispatch) => {
   const body = { email, password };
 

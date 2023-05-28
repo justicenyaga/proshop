@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Avatar,
@@ -15,6 +15,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
+import queryString from "query-string";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AdminIcon from "@mui/icons-material/AdminPanelSettings";
 import PeopleIcon from "@mui/icons-material/PeopleAlt";
@@ -47,6 +48,8 @@ const useStyles = makeStyles({
 
 function Navbar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   let currentlyHovering = false;
   const styles = useStyles();
@@ -72,7 +75,24 @@ function Navbar() {
   useEffect(() => {
     dispatch(checkAuthentication());
     isAuthenticated && dispatch(loadUser());
-  }, [dispatch, isAuthenticated]);
+
+    const values = queryString.parse(location.search);
+    const access = values.access ? values.access : null;
+    const refresh = values.refresh ? values.refresh : null;
+
+    if (access && refresh) {
+      localStorage.setItem(
+        "access",
+        JSON.stringify(decodeURIComponent(access))
+      );
+      localStorage.setItem(
+        "refresh",
+        JSON.stringify(decodeURIComponent(refresh))
+      );
+
+      navigate(location.pathname);
+    }
+  }, [dispatch, isAuthenticated, location.search]);
 
   function handleAdminClick(event) {
     if (adminAnchorEl !== event.currentTarget) {

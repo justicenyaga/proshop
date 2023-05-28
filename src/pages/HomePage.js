@@ -1,43 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Grid, Box, Button, Alert } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import queryString from "query-string";
 
 import Product from "../components/Product";
 import HomePageHeader from "../components/HomePageHeader";
 import { ProductSkeleton } from "../components/Skeletons";
 
 import { loadProducts } from "../store/products";
-import { authenticateWithGoogle } from "../store/user";
 
 const HomePage = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const [productsToShow, setProductsToShow] = useState(24);
 
   const reduxState = useSelector((state) => state);
 
   const { productsList: products, loading, error } = reduxState.products;
-  const { isAuthenticated } = reduxState.user;
 
   useEffect(() => {
     dispatch(loadProducts());
   }, [dispatch]);
-
-  useEffect(() => {
-    const values = queryString.parse(location.search);
-    const state = values.state ? values.state : null;
-    const code = values.code ? values.code : null;
-
-    if (state && code) {
-      if (isAuthenticated) navigate("/");
-      else dispatch(authenticateWithGoogle(state, code));
-    }
-  }, [dispatch, navigate, isAuthenticated, location.search]);
 
   const handleLoadMoreClick = () => {
     setProductsToShow(productsToShow + 24);

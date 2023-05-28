@@ -66,12 +66,9 @@ const renderSubmitButton = (label, loading, icon) => {
 
 const renderGoogleButton = () => {
   const handleContinueWithGoogle = async () => {
-    try {
-      const response = await httpService.get(
-        `/api/auth/o/google-oauth2/?redirect_uri=${redirectUri}`
-      );
-      window.location.replace(response.data.authorization_url);
-    } catch (error) {}
+    window.location.replace(
+      process.env.REACT_APP_API_URL + "/api/users/google/?flag=google"
+    );
   };
 
   return (
