@@ -138,6 +138,9 @@ const slice = createSlice({
       auth.error = null;
 
       auth.successSignUp && delete auth.successSignUp;
+      auth.successPasswordResetRequest &&
+        delete auth.successPasswordResetRequest;
+      auth.successPasswordReset && delete auth.successPasswordReset;
 
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
