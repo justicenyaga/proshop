@@ -139,6 +139,11 @@ function App() {
                   element={<ResetPassword />}
                 />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/profile/:tab" element={<ProfilePage />} />
+                <Route
+                  path="/profile/:tab/:section"
+                  element={<ProfilePage />}
+                />
                 <Route path="/shipping" element={<ShippingPage />} />
                 <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/placeorder" element={<PlaceorderPage />} />

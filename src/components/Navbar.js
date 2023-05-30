@@ -21,8 +21,10 @@ import AdminIcon from "@mui/icons-material/AdminPanelSettings";
 import PeopleIcon from "@mui/icons-material/PeopleAlt";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import OrdersIcon from "@mui/icons-material/LocalShipping";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
 import PersonIcon from "@mui/icons-material/Person";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 
@@ -92,7 +94,7 @@ function Navbar() {
 
       navigate(location.pathname);
     }
-  }, [dispatch, isAuthenticated, location.search]);
+  }, [dispatch, navigate, isAuthenticated, location.search]);
 
   function handleAdminClick(event) {
     if (adminAnchorEl !== event.currentTarget) {
@@ -345,8 +347,14 @@ function Navbar() {
                 >
                   <NavMenuItem
                     label="Profile"
-                    icon={<PersonIcon fontSize="small" />}
+                    icon={<HowToRegIcon fontSize="small" />}
                     route="/profile"
+                    handleClose={handleCloseProfile}
+                  />
+                  <NavMenuItem
+                    label="Orders"
+                    icon={<Inventory2Icon fontSize="small" />}
+                    route="/orders"
                     handleClose={handleCloseProfile}
                   />
                   <NavMenuItem

@@ -10,7 +10,9 @@ const slice = createSlice({
 
   initialState: {
     userInfo: {},
+    addresses: [],
     isAuthenticated: false,
+    lastVerified: null,
     access: "",
     refresh: "",
     keepMeLoggedIn: false,
@@ -46,14 +48,17 @@ const slice = createSlice({
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
       localStorage.removeItem("userInfo");
+      localStorage.removeItem("addresses");
     },
 
     authVerificationSuccess: (auth, action) => {
       auth.isAuthenticated = true;
+      auth.lastVerified = Date.now();
     },
 
     authVerificationFailed: (auth, action) => {
       auth.isAuthenticated = false;
+      auth.lastVerified = null;
     },
 
     userInfoReceived: (auth, action) => {
@@ -89,6 +94,36 @@ const slice = createSlice({
       auth.error = action.payload;
     },
 
+    emailChangeRequested: (auth, action) => {
+      auth.loading = true;
+    },
+
+    emailChanged: (auth, action) => {
+      auth.emailChangeSuccess = true;
+      auth.loading = false;
+
+      localStorage.removeItem("userInfo");
+    },
+
+    emailChangeFailed: (auth, action) => {
+      auth.error = action.payload;
+      auth.loading = false;
+    },
+
+    passwordChangeRequested: (auth, action) => {
+      auth.loading = true;
+    },
+
+    passwordChanged: (auth, action) => {
+      auth.passwordChangeSuccess = true;
+      auth.loading = false;
+    },
+
+    passwordChangeFailed: (auth, action) => {
+      auth.error = action.payload;
+      auth.loading = false;
+    },
+
     accountDeletionRequested: (auth, action) => {
       auth.loading = true;
     },
@@ -104,6 +139,7 @@ const slice = createSlice({
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
       localStorage.removeItem("userInfo");
+      localStorage.removeItem("addresses");
     },
 
     passwordResetRequested: (auth, action) => {
@@ -130,6 +166,46 @@ const slice = createSlice({
       auth.error = action.payload;
     },
 
+    userAddressesRequested: (auth, action) => {
+      auth.loading = true;
+    },
+
+    userAddressesReceived: (auth, action) => {
+      auth.addresses = action.payload;
+      auth.loading = false;
+
+      localStorage.setItem("addresses", JSON.stringify(action.payload));
+    },
+
+    userAddressesRequestFailed: (auth, action) => {
+      auth.loading = false;
+      auth.error = action.payload;
+
+      localStorage.removeItem("addresses");
+    },
+
+    userAddressAdded: (auth, action) => {
+      auth.addresses.push(action.payload);
+
+      localStorage.setItem("addresses", JSON.stringify(auth.addresses));
+    },
+
+    userAddressUpdated: (auth, action) => {
+      auth.addresses = auth.addresses.map((address) =>
+        address._id === action.payload._id ? action.payload : address
+      );
+
+      localStorage.setItem("addresses", JSON.stringify(auth.addresses));
+    },
+
+    userAddressDeleted: (auth, action) => {
+      auth.addresses = auth.addresses.filter(
+        (address) => address._id !== action.payload
+      );
+
+      localStorage.setItem("addresses", JSON.stringify(auth.addresses));
+    },
+
     userLoggedOut: (auth, action) => {
       auth.userInfo = {};
       auth.isAuthenticated = false;
@@ -145,14 +221,17 @@ const slice = createSlice({
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
       localStorage.removeItem("userInfo");
+      localStorage.removeItem("addresses");
     },
 
     errorCleared: (auth, action) => {
       auth.error = null;
-      auth.successSignUp && delete auth.successSignUp;
+      // auth.successSignUp && delete auth.successSignUp;
       auth.successPasswordResetRequest &&
         delete auth.successPasswordResetRequest;
       auth.successPasswordReset && delete auth.successPasswordReset;
+      auth.emailChangeSuccess && delete auth.emailChangeSuccess;
+      auth.passwordChangeSuccess && delete auth.passwordChangeSuccess;
     },
   },
 });
@@ -168,6 +247,12 @@ const {
   userUpdateRequested,
   userUpdated,
   userUpdateFailed,
+  emailChangeRequested,
+  emailChanged,
+  emailChangeFailed,
+  passwordChangeRequested,
+  passwordChanged,
+  passwordChangeFailed,
   accountDeletionRequested,
   accountDeleted,
   passwordResetRequested,
@@ -175,6 +260,12 @@ const {
   passwordResetFailed,
   passwordReset,
   accountDeletionFailed,
+  userAddressesRequested,
+  userAddressesReceived,
+  userAddressesRequestFailed,
+  userAddressAdded,
+  userAddressUpdated,
+  userAddressDeleted,
   userLoggedOut,
   errorCleared,
 } = slice.actions;
@@ -213,6 +304,11 @@ export const refrestToken = () => async (dispatch, getState) => {
 export const checkAuthentication = () => async (dispatch, getState) => {
   const access = JSON.parse(localStorage.getItem("access"));
 
+  const { lastVerified } = getState().user;
+  const diffInMinutes = (Date.now() - lastVerified) / (1000 * 60);
+
+  if (diffInMinutes < 10) return;
+
   if (access) {
     const headers = {
       "Content-Type": "application/json",
@@ -237,12 +333,17 @@ export const checkAuthentication = () => async (dispatch, getState) => {
     }
   } else {
     dispatch(authVerificationFailed());
-    dispatch(logout());
   }
 };
 
-export const loadUser = () => (dispatch) => {
+export const loadUser = () => async (dispatch, getState) => {
   const access = JSON.parse(localStorage.getItem("access"));
+  const localStorageUser = JSON.parse(localStorage.getItem("userInfo"));
+
+  const { isAuthenticated, userInfo } = getState().user;
+
+  if (access && isAuthenticated && userInfo?.is_active && localStorageUser?.id)
+    return;
 
   if (access) {
     const headers = {
@@ -251,7 +352,7 @@ export const loadUser = () => (dispatch) => {
       Accept: "application/json",
     };
 
-    dispatch(
+    await dispatch(
       apiCallBegun({
         url: "/api/auth/users/me/",
         method: "GET",
@@ -259,6 +360,8 @@ export const loadUser = () => (dispatch) => {
         onSuccess: userInfoReceived.type,
       })
     );
+
+    dispatch(getUserAddresses());
   }
 };
 
@@ -332,31 +435,55 @@ export const resendActivationLink = (email) => async (dispatch) => {
   }
 };
 
-export const requestEmailReset = (email) => async (dispatch) => {
-  const body = { email };
+export const changeEmail =
+  (new_email, current_password) => async (dispatch, getState) => {
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `JWT ${JSON.parse(localStorage.getItem("access"))}`,
+    };
 
-  try {
-    await httpService.post("/api/auth/users/reset_email/", body, headers);
-    dispatch({ type: "Email Reset Requested" });
-  } catch (error) {
-    dispatch({ type: "Email Reset Request Failed" });
-  }
-};
+    const body = { new_email, re_new_email: new_email, current_password };
 
-export const resetEmail = (uid, token, new_email) => async (dispatch) => {
-  const body = { uid, token, new_email, re_new_email: new_email };
-
-  try {
-    await httpService.post(
-      "/api/auth/users/reset_email_confirm/",
-      body,
-      headers
+    await dispatch(
+      apiCallBegun({
+        url: "/api/auth/users/set_email/",
+        method: "POST",
+        data: body,
+        headers,
+        onStart: emailChangeRequested.type,
+        onSuccess: emailChanged.type,
+        onError: emailChangeFailed.type,
+      })
     );
-    dispatch({ type: "Email Reset Success" });
-  } catch (error) {
-    dispatch({ type: "Email Reset Failed" });
-  }
-};
+
+    dispatch(loadUser());
+  };
+
+export const changePassword =
+  (new_password, current_password) => async (dispatch, getState) => {
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `JWT ${JSON.parse(localStorage.getItem("access"))}`,
+    };
+
+    const body = {
+      new_password,
+      re_new_password: new_password,
+      current_password,
+    };
+
+    await dispatch(
+      apiCallBegun({
+        url: "/api/auth/users/set_password/",
+        method: "POST",
+        data: body,
+        headers,
+        onStart: passwordChangeRequested.type,
+        onSuccess: passwordChanged.type,
+        onError: passwordChangeFailed.type,
+      })
+    );
+  };
 
 export const requestPasswordReset = (email) => async (dispatch) => {
   const body = { email };
@@ -440,6 +567,96 @@ export const deleteAccount = (password) => async (dispatch) => {
         onError: accountDeletionFailed.type,
       })
     );
+  }
+};
+
+export const getUserAddresses = () => async (dispatch) => {
+  const access = JSON.parse(localStorage.getItem("access"));
+
+  if (access) {
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `JWT ${access}`,
+    };
+
+    await dispatch(
+      apiCallBegun({
+        url: "/api/addresses/user/",
+        method: "GET",
+        headers,
+        onStart: userAddressesRequested.type,
+        onSuccess: userAddressesReceived.type,
+        onError: userAddressesRequestFailed.type,
+      })
+    );
+  }
+};
+
+export const addUserAddress = (address) => async (dispatch) => {
+  const access = JSON.parse(localStorage.getItem("access"));
+
+  if (access) {
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `JWT ${access}`,
+    };
+
+    await dispatch(
+      apiCallBegun({
+        url: "/api/addresses/add/",
+        method: "POST",
+        data: address,
+        headers,
+        onSuccess: userAddressAdded.type,
+      })
+    );
+
+    dispatch(getUserAddresses());
+  }
+};
+
+export const updateUserAddress = (addressId, data) => async (dispatch) => {
+  const access = JSON.parse(localStorage.getItem("access"));
+
+  if (access) {
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `JWT ${access}`,
+    };
+
+    await dispatch(
+      apiCallBegun({
+        url: `/api/addresses/${addressId}/update/`,
+        method: "PUT",
+        data,
+        headers,
+        onSuccess: userAddressUpdated.type,
+      })
+    );
+
+    dispatch(getUserAddresses());
+  }
+};
+
+export const deleteUserAddress = (addressId) => async (dispatch) => {
+  const access = JSON.parse(localStorage.getItem("access"));
+
+  if (access) {
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `JWT ${access}`,
+    };
+
+    await dispatch(
+      apiCallBegun({
+        url: `/api/addresses/${addressId}/delete/`,
+        method: "DELETE",
+        headers,
+        onSuccess: userAddressDeleted.type,
+      })
+    );
+
+    dispatch(getUserAddresses());
   }
 };
 

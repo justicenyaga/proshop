@@ -1,184 +1,300 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { LinkContainer } from "react-router-bootstrap";
-import { Form, Button, Row, Col, Table } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import Message from "../components/Message";
-import Loader from "../components/Loader";
-import { getUserDetails } from "../store/userDetails";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import {
-  updateUserProfile,
-  resetProfileUpdate,
-} from "../store/userProfileUpdate";
-import { loadUserOrders } from "../store/userOrders";
+  Stack,
+  Box,
+  Collapse,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemButton,
+  Button,
+  IconButton,
+  Divider,
+  useTheme,
+  useMediaQuery,
+  Typography,
+} from "@mui/material";
+import { grey, red } from "@mui/material/colors";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import BookIcon from "@mui/icons-material/Book";
+import LockIcon from "@mui/icons-material/Lock";
+import LogoutIcon from "@mui/icons-material/Logout";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import MailIcon from "@mui/icons-material/Mail";
+import VpnKeyIcon from "@mui/icons-material/VpnKey";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
+import Profile from "../components/Profile";
+import ProfileEdit from "../components/ProfileEdit";
+// import Orders from "../components/Orders";
+import AddressBook from "../components/AddressBook";
+import AddressEdit from "../components/AddressEdit";
+import ChangeEmail from "../components/ChangeEmail";
+import ChangePassword from "../components/ChangePassword";
+import DeleteAccount from "../components/DeleteAccount";
+
+import { logout } from "../store/user";
 
 const ProfilePage = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const theme = useTheme();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const reduxState = useSelector((state) => state);
-  const { user, loading, error } = reduxState.userDetails;
-  const { userInfo } = reduxState.user;
-  const { success } = reduxState.userProfileUpdate;
-  const {
-    loading: loadingOrders,
-    error: errorOrders,
-    orders,
-  } = reduxState.userOrders;
+  const { tab, section } = useParams();
+
+  const [selectedTitle, setSelectedTitle] = useState(isMobile ? -1 : 0);
+  const [selectedSecurityItem, setSelectedSecurityItem] = useState(-1);
+  const [openSecurity, setOpenSecurity] = useState(false);
+
+  const { userInfo } = useSelector((state) => state.user);
+
+  const items = [
+    {
+      label: "My Account",
+      icon: <AccountCircleIcon />,
+      route: "/profile/account",
+    },
+    {
+      label: "Orders",
+      icon: <Inventory2Icon />,
+      route: "/profile/orders",
+    },
+    {
+      label: "Pending Reviews",
+      icon: <RateReviewIcon />,
+      route: "/profile/reviews",
+    },
+    {
+      label: "Address Book",
+      icon: <BookIcon />,
+      route: "/profile/addresses",
+    },
+  ];
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-    } else {
-      if (!user || !user.name || success || userInfo._id !== user._id) {
-        dispatch(resetProfileUpdate());
-        dispatch(getUserDetails("profile"));
-      } else {
-        setName(user.name);
-        setEmail(user.email);
-      }
+    !userInfo?.id && navigate("/login");
+    !isMobile && !tab && navigate("/profile/account");
+  }, [tab, navigate, userInfo]);
 
-      dispatch(loadUserOrders());
-    }
-  }, [dispatch, userInfo, navigate, user, success]);
+  const handleListItemClick = (index, item) => {
+    setSelectedTitle(index);
+    setSelectedSecurityItem(-1);
+    navigate(item.route);
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSecurityItemClick = (index, route) => {
+    setSelectedSecurityItem(index);
+    setSelectedTitle(-1);
+    navigate(route);
+  };
 
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match");
-    } else {
-      dispatch(
-        updateUserProfile({
-          id: user._id,
-          name,
-          email,
-          password,
-        })
-      );
+  const handleToggleOpenSecurity = () => {
+    setOpenSecurity(!openSecurity);
+  };
 
-      setMessage("");
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
+
+  const mobileHeaders = {
+    account: "Profile Details",
+    orders: "Orders",
+    reviews: "Pending Reviews",
+    addresses: "Address Book",
+    "change-email": "Change Email",
+    "change-password": "Change Password",
+    "delete-account": "Delete Account",
+    sections: {
+      account: {
+        edit: "Edit Profile",
+      },
+      addresses: {
+        [section === "new" ? "new" : section]:
+          section === "new" ? "Add a New Address" : "Edit Address",
+      },
+    },
+  };
+
+  const tabContent = () => {
+    switch (tab) {
+      case "account":
+        return section ? <ProfileEdit /> : <Profile />;
+      // case "orders":
+      //   return <Orders />;
+      case "addresses":
+        return section ? <AddressEdit /> : <AddressBook />;
+      case "change-email":
+        return <ChangeEmail />;
+      case "change-password":
+        return <ChangePassword />;
+      case "delete-account":
+        return <DeleteAccount />;
+      default:
+        return null;
     }
   };
 
   return (
-    <Row>
-      <Col md={3}>
-        <h2>User Profile</h2>
+    <>
+      {isMobile && tab && (
+        <Stack direction="row" spacing={2} alignItems="center">
+          <IconButton onClick={() => navigate(-1)}>
+            <ArrowBackIcon />
+          </IconButton>
 
-        {message && <Message variant="danger"> {message} </Message>}
-        {error && <Message variant="danger">{error}</Message>}
-        {loading && <Loader />}
+          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+            {section
+              ? mobileHeaders.sections[tab][section]
+              : mobileHeaders[tab]}
+          </Typography>
+        </Stack>
+      )}
 
-        <Form onSubmit={handleSubmit}>
-          <Form.Group controlId="name">
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              type="text"
-              value={name}
-              required
-              placeholder="Enter name"
-              onChange={(e) => setName(e.target.value)}
-            />
-          </Form.Group>
-          <Form.Group controlId="email">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              value={email}
-              required
-              placeholder="Enter email"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group controlId="password">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              value={password}
-              placeholder="Enter password"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group controlId="confirmPassword">
-            <Form.Label>Confirm Password</Form.Label>
-            <Form.Control
-              type="password"
-              value={confirmPassword}
-              placeholder="Confirm password"
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </Form.Group>
-
-          <br />
-
-          <Button type="submit" variant="primary">
-            Update
-          </Button>
-        </Form>
-      </Col>
-
-      <Col md={9}>
-        <h2>My Orders</h2>
-
-        {loadingOrders ? (
-          <Loader />
-        ) : errorOrders ? (
-          <Message variant="danger">{errorOrders}</Message>
-        ) : (
-          <Table striped responsive className="table-sm">
-            <thead>
-              <tr>
-                <th>Order No</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Paid</th>
-                <th>Delivered</th>
-                <th></th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order._id}>
-                  <td>{order._id}</td>
-                  <td>{order.createdAt.substring(0, 10)}</td>
-                  <td>${order.totalPrice}</td>
-                  <td>
-                    {order.isPaid ? (
-                      order.paidAt.substring(0, 10)
-                    ) : (
-                      <i className="fa fa-times" style={{ color: "red" }}></i>
-                    )}
-                  </td>
-                  <td>
-                    {order.isDelivered ? (
-                      order.deliveredAt.substring(0, 10)
-                    ) : (
-                      <i className="fa fa-times" style={{ color: "red" }}></i>
-                    )}
-                  </td>
-
-                  <td>
-                    <LinkContainer to={`/order/${order._id}`}>
-                      <Button className="btn btn-sm">Details</Button>
-                    </LinkContainer>
-                  </td>
-                </tr>
+      <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+        {(!isMobile || (isMobile && !tab)) && (
+          <Box
+            sx={{
+              width: isMobile ? "100%" : "30%",
+              height: "fit-content",
+              bgcolor: "white",
+              borderRadius: "10px",
+              boxShadow: 0.5,
+            }}
+          >
+            <List
+              sx={{
+                py: 0,
+                "& .MuiListItemButton-root.Mui-selected": {
+                  bgcolor: grey[300],
+                },
+              }}
+            >
+              {items.map((item, index) => (
+                <ListItemButton
+                  key={index}
+                  selected={selectedTitle === index}
+                  onClick={() => handleListItemClick(index, item)}
+                  sx={
+                    index === 0
+                      ? {
+                          borderTopLeftRadius: "10px",
+                          borderTopRightRadius: "10px",
+                        }
+                      : {}
+                  }
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
               ))}
-            </tbody>
-          </Table>
+
+              <ListItemButton onClick={handleToggleOpenSecurity}>
+                <ListItemIcon>
+                  <LockIcon />
+                </ListItemIcon>
+                <ListItemText primary="Security Settings" />
+                {openSecurity ? <ExpandLess /> : <ExpandMore />}
+              </ListItemButton>
+
+              <Collapse in={openSecurity} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  <ListItemButton
+                    selected={selectedSecurityItem === 0}
+                    onClick={() =>
+                      handleSecurityItemClick(0, "/profile/change-email")
+                    }
+                    sx={{
+                      pl: 6,
+                    }}
+                  >
+                    <ListItemIcon>
+                      <MailIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Change Email" />
+                  </ListItemButton>
+
+                  <ListItemButton
+                    selected={selectedSecurityItem === 1}
+                    onClick={() =>
+                      handleSecurityItemClick(1, "/profile/change-password")
+                    }
+                    sx={{
+                      pl: 6,
+                    }}
+                  >
+                    <ListItemIcon>
+                      <VpnKeyIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Change Password" />
+                  </ListItemButton>
+                  <ListItemButton
+                    selected={selectedSecurityItem === 2}
+                    onClick={() =>
+                      handleSecurityItemClick(2, "/profile/delete-account")
+                    }
+                    sx={{
+                      pl: 6,
+                      color: red[500],
+                      "&:hover": {
+                        bgcolor: red[50],
+                      },
+                      "& .MuiListItemButton-root.Mui-selected": {
+                        bgcolor: red[50],
+                      },
+                    }}
+                  >
+                    <ListItemIcon>
+                      <DeleteIcon color="error" />
+                    </ListItemIcon>
+                    <ListItemText primary="Delete Account" />
+                  </ListItemButton>
+                </List>
+              </Collapse>
+            </List>
+
+            <Divider />
+
+            <ListItem>
+              <Button
+                variant="contained"
+                color="inherit"
+                fullWidth
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </ListItem>
+          </Box>
         )}
-      </Col>
-    </Row>
+
+        {(!isMobile || (isMobile && tab)) && (
+          <Box
+            sx={{
+              width: isMobile ? "100%" : "70%",
+              height: "fit-content",
+              minHeight: !isMobile ? "400px" : "fit-content",
+              bgcolor: "white",
+              borderRadius: "10px",
+              boxShadow: 0.5,
+              p: 2,
+            }}
+          >
+            {tabContent()}
+          </Box>
+        )}
+      </Stack>
+    </>
   );
 };
 
