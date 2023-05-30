@@ -3,6 +3,8 @@ import { Container } from "@mui/material";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { useTheme, useMediaQuery } from "@mui/material";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { grey } from "@mui/material/colors";
 
@@ -92,71 +94,78 @@ function App() {
 
   return (
     <div style={{ backgroundColor: "#f1f1f1", minHeight: "100vh" }}>
-      <Router>
-        <ThemeProvider theme={navigationTheme}>
-          <Navbar />
-        </ThemeProvider>
-
-        <ToastContainer theme="colored" autoClose={2000} />
-        <main
-          className={isMobile ? "my-2" : "py-3"}
-          style={isMobile ? { paddingTop: "4rem", paddingBottom: "4rem" } : {}}
-        >
-          <Container>
-            <Routes>
-              <Route path="/" element={<HomePage />} exact />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/:category" element={<CategoryPage />} />
-              <Route
-                path="/:category/:subcategory"
-                element={<CategoryPage />}
-              />
-              <Route path="/product/:id" element={<ProductPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/cart/:id" element={<CartPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/not-verified" element={<NotVerifiedPage />} />
-              <Route
-                path="/not-verified/:email"
-                element={<NotVerifiedPage />}
-              />
-              <Route
-                path="/activate/:uid/:token"
-                element={<ActivationPage />}
-              />
-              <Route
-                path="/reset-password"
-                element={<RequestPasswordReset />}
-              />
-              <Route
-                path="/reset-password/:uid/:token"
-                element={<ResetPassword />}
-              />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/shipping" element={<ShippingPage />} />
-              <Route path="/payment" element={<PaymentPage />} />
-              <Route path="/placeorder" element={<PlaceorderPage />} />
-              <Route path="/order/:id" element={<OrderPage />} />
-              <Route path="/admin/users" element={<UserListPage />} />
-              <Route path="/admin/users/:id" element={<UserEditPage />} />
-              <Route path="/admin/products" element={<ProductListPage />} />
-              <Route path="/admin/products/:id" element={<ProductEditPage />} />
-              <Route path="/admin/orders" element={<OrderListPage />} />
-              <Route path="/page404" element={<PageNotFound />} />
-              <Route path="*" element={<PageNotFound />} />
-            </Routes>
-          </Container>
-        </main>
-
-        {isMobile ? (
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Router>
           <ThemeProvider theme={navigationTheme}>
-            <BottomBar />
+            <Navbar />
           </ThemeProvider>
-        ) : (
-          <Footer />
-        )}
-      </Router>
+
+          <ToastContainer theme="colored" autoClose={2000} />
+          <main
+            className={isMobile ? "my-2" : "py-3"}
+            style={
+              isMobile ? { paddingTop: "4rem", paddingBottom: "4rem" } : {}
+            }
+          >
+            <Container>
+              <Routes>
+                <Route path="/" element={<HomePage />} exact />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/:category" element={<CategoryPage />} />
+                <Route
+                  path="/:category/:subcategory"
+                  element={<CategoryPage />}
+                />
+                <Route path="/product/:id" element={<ProductPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/cart/:id" element={<CartPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/not-verified" element={<NotVerifiedPage />} />
+                <Route
+                  path="/not-verified/:email"
+                  element={<NotVerifiedPage />}
+                />
+                <Route
+                  path="/activate/:uid/:token"
+                  element={<ActivationPage />}
+                />
+                <Route
+                  path="/reset-password"
+                  element={<RequestPasswordReset />}
+                />
+                <Route
+                  path="/reset-password/:uid/:token"
+                  element={<ResetPassword />}
+                />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/shipping" element={<ShippingPage />} />
+                <Route path="/payment" element={<PaymentPage />} />
+                <Route path="/placeorder" element={<PlaceorderPage />} />
+                <Route path="/order/:id" element={<OrderPage />} />
+                <Route path="/admin/users" element={<UserListPage />} />
+                <Route path="/admin/users/:id" element={<UserEditPage />} />
+                <Route path="/admin/products" element={<ProductListPage />} />
+                <Route
+                  path="/admin/products/:id"
+                  element={<ProductEditPage />}
+                />
+                <Route path="/admin/orders" element={<OrderListPage />} />
+                <Route path="/page404" element={<PageNotFound />} />
+                <Route path="*" element={<PageNotFound />} />
+              </Routes>
+            </Container>
+          </main>
+
+          {isMobile ? (
+            <ThemeProvider theme={navigationTheme}>
+              <BottomBar />
+            </ThemeProvider>
+          ) : (
+            <Footer />
+          )}
+        </Router>
+      </LocalizationProvider>
     </div>
   );
 }
