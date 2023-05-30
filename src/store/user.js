@@ -232,12 +232,12 @@ export const checkAuthentication = () => async (dispatch, getState) => {
         await dispatch(authVerificationSuccess());
       }
     } catch (error) {
-      if (getState().auth.keepMeLoggedIn) {
-        await dispatch(refrestToken());
-      } else dispatch(authVerificationFailed());
+      dispatch(authVerificationFailed());
+      dispatch(logout());
     }
   } else {
     dispatch(authVerificationFailed());
+    dispatch(logout());
   }
 };
 
@@ -390,32 +390,33 @@ export const resetPassword = (uid, token, new_password) => async (dispatch) => {
   );
 };
 
-export const updateProfile = (first_name, last_name) => async (dispatch) => {
-  const access = JSON.parse(localStorage.getItem("access"));
+export const updateProfile =
+  (first_name, last_name, gender, dob) => async (dispatch) => {
+    const access = JSON.parse(localStorage.getItem("access"));
 
-  if (access) {
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `JWT ${access}`,
-    };
+    if (access) {
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `JWT ${access}`,
+      };
 
-    const body = { first_name, last_name };
+      const body = { first_name, last_name, gender, dob };
 
-    await dispatch(
-      apiCallBegun({
-        url: "/api/users/update-profile/",
-        method: "PUT",
-        data: body,
-        headers,
-        onStart: userUpdateRequested.type,
-        onSuccess: userUpdated.type,
-        onError: userUpdateFailed.type,
-      })
-    );
+      await dispatch(
+        apiCallBegun({
+          url: "/api/users/update-profile/",
+          method: "PUT",
+          data: body,
+          headers,
+          onStart: userUpdateRequested.type,
+          onSuccess: userUpdated.type,
+          onError: userUpdateFailed.type,
+        })
+      );
 
-    dispatch(loadUser());
-  }
-};
+      dispatch(loadUser());
+    }
+  };
 
 export const deleteAccount = (password) => async (dispatch) => {
   const access = JSON.parse(localStorage.getItem("access"));
