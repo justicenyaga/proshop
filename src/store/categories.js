@@ -103,6 +103,11 @@ export const loadSubCategories = () => (dispatch, getState) => {
 };
 
 export const loadHotCategories = () => (dispatch, getState) => {
+  const { lastFetch } = getState().categories;
+  const diffInMinutes = (Date.now() - lastFetch) / (1000 * 60);
+
+  if (diffInMinutes < 10) return;
+
   return dispatch(
     apiCallBegun({
       url: `${url}hot-categories/`,

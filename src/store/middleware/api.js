@@ -57,6 +57,11 @@ const api =
           ? error.response.data.new_email[0]
           : errorMessage;
 
+      errorMessage =
+        error.response && error.response.data.new_password
+          ? error.response.data.new_password[0]
+          : errorMessage;
+
       // General Error
       dispatch(actions.apiCallFailed(errorMessage));
 

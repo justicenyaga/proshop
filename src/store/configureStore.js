@@ -22,6 +22,10 @@ const userInfoFromLocalStorage = localStorage.getItem("userInfo")
   ? JSON.parse(localStorage.getItem("userInfo"))
   : {};
 
+const addressesFromLocalStorage = localStorage.getItem("addresses")
+  ? JSON.parse(localStorage.getItem("addresses"))
+  : [];
+
 const shippingAddressFromLocalStorage = localStorage.getItem("shippingAddress")
   ? JSON.parse(localStorage.getItem("shippingAddress"))
   : {};
@@ -36,7 +40,10 @@ const initialState = {
     shippingAddress: shippingAddressFromLocalStorage,
     paymentMethod: paymentMethodFromLocalStorage,
   },
-  user: { userInfo: userInfoFromLocalStorage },
+  user: {
+    userInfo: userInfoFromLocalStorage,
+    addresses: addressesFromLocalStorage,
+  },
   categories: {
     categoryList: categories,
     subCategoryList: subCategories,
