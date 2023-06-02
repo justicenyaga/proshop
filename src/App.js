@@ -12,6 +12,7 @@ import ActivationPage from "./pages/ActivationPage";
 import BottomBar from "./components/BottomBar";
 import CartPage from "./pages/CartPage";
 import CategoryPage from "./pages/CategoryPage";
+import CheckoutAddresses from "./pages/CheckoutAddresses";
 import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -30,7 +31,7 @@ import RegisterPage from "./pages/RegisterPage";
 import RequestPasswordReset from "./pages/RequestPasswordReset";
 import ResetPassword from "./pages/ResetPassword";
 import SearchPage from "./pages/SearchPage";
-import ShippingPage from "./pages/ShippingPage";
+import ShippingAddressPage from "./pages/ShippingAddressPage";
 import UserEditPage from "./pages/UserEditPage";
 import UserListPage from "./pages/UserListPage";
 
@@ -144,7 +145,15 @@ function App() {
                   path="/profile/:tab/:section"
                   element={<ProfilePage />}
                 />
-                <Route path="/shipping" element={<ShippingPage />} />
+                <Route path="/address" element={<ShippingAddressPage />} />
+                <Route
+                  path="/shipping-address"
+                  element={<ShippingAddressPage />}
+                />
+                <Route
+                  path="/checkout/addresses"
+                  element={<CheckoutAddresses />}
+                />
                 <Route path="/payment" element={<PaymentPage />} />
                 <Route path="/placeorder" element={<PlaceorderPage />} />
                 <Route path="/order/:id" element={<OrderPage />} />

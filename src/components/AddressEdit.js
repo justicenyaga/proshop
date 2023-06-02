@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   Typography,
   TextField,
@@ -24,7 +24,10 @@ const AddressEdit = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
+  const location = useLocation();
   const { section } = useParams();
+
+  const redirect = location.search && location.search.split("=")[1];
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -126,11 +129,11 @@ const AddressEdit = () => {
     if (section === "new") {
       dispatch(addUserAddress(data));
       toast.success("Address added successfully");
-      navigate("/profile/addresses");
+      redirect ? navigate(redirect) : navigate("/profile/addresses");
     } else {
       dispatch(updateUserAddress(section, data));
       toast.success("Address updated successfully");
-      navigate("/profile/addresses");
+      redirect ? navigate(redirect) : navigate("/profile/addresses");
     }
   };
 

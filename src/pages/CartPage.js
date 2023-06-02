@@ -65,7 +65,7 @@ const CartPage = () => {
   };
 
   const handleToCheckout = () => {
-    navigate("/login?redirect=shipping");
+    navigate("/login?redirect=shipping-address");
   };
 
   const handleIncrement = async (itemId) => {
