@@ -45,11 +45,7 @@ function BottomBar() {
   let totalItemsInCart = 0;
   cartItems.map((item) => (totalItemsInCart += Number(item.quantity)));
 
-  const hash = window.location.hash;
-  let path = hash.split("#")[1];
-  if (!path) {
-    path = "/";
-  }
+  const path = window.location.pathname;
 
   // TODO: Implement all the necessary features on the bottom bar:
   //  This include: change the highlighted icon to outlined when Active and update

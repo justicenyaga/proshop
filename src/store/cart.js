@@ -62,7 +62,7 @@ export default slice.reducer;
 // Action creators
 export const addItemToCart =
   (productId, quantity) => async (dispatch, getState) => {
-    const url = `/api/products/${productId}`;
+    const url = `/api/products/${productId}/`;
     const { data } = await httpService.get(url);
 
     dispatch({
