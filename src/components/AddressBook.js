@@ -59,7 +59,7 @@ const AddressBook = () => {
           alignItems="center"
         >
           <Typography variant="body1" sx={{ fontWeight: 550, fontSize: 18 }}>
-            Profile Details
+            Address Book
           </Typography>
 
           <AddNewAddressButton />
@@ -91,7 +91,11 @@ const AddressBook = () => {
             width="200px"
             height="200px"
           />
-          <Typography variant="body1" sx={{ fontWeight: 520, fontSize: 16 }}>
+          <Typography
+            variant="body1"
+            textAlign="center"
+            sx={{ fontWeight: 520, fontSize: 16 }}
+          >
             You have not added any address yet
           </Typography>
         </Box>

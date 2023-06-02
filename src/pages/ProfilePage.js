@@ -33,9 +33,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import Profile from "../components/Profile";
 import ProfileEdit from "../components/ProfileEdit";
-// import Orders from "../components/Orders";
+import Orders from "../components/Orders";
+import Order from "../components/Order";
 import AddressBook from "../components/AddressBook";
 import AddressEdit from "../components/AddressEdit";
+import PendingReviews from "../components/PendingReviews";
+import ReviewProduct from "../components/ReviewProduct";
 import ChangeEmail from "../components/ChangeEmail";
 import ChangePassword from "../components/ChangePassword";
 import DeleteAccount from "../components/DeleteAccount";
@@ -83,6 +86,20 @@ const ProfilePage = () => {
   useEffect(() => {
     !userInfo?.id && navigate("/login");
     !isMobile && !tab && navigate("/profile/account");
+
+    tab === "account"
+      ? setSelectedTitle(0)
+      : tab === "orders"
+      ? setSelectedTitle(1)
+      : tab === "reviews"
+      ? setSelectedTitle(2)
+      : tab === "addresses"
+      ? setSelectedTitle(3)
+      : tab === "change-email"
+      ? setSelectedSecurityItem(0)
+      : tab === "change-password"
+      ? setSelectedSecurityItem(1)
+      : tab === "delete-account" && setSelectedSecurityItem(2);
   }, [tab, navigate, userInfo]);
 
   const handleListItemClick = (index, item) => {
@@ -122,6 +139,12 @@ const ProfilePage = () => {
         [section === "new" ? "new" : section]:
           section === "new" ? "Add a New Address" : "Edit Address",
       },
+      orders: {
+        [section]: "Order Details",
+      },
+      reviews: {
+        [section]: "Review Product",
+      },
     },
   };
 
@@ -129,10 +152,12 @@ const ProfilePage = () => {
     switch (tab) {
       case "account":
         return section ? <ProfileEdit /> : <Profile />;
-      // case "orders":
-      //   return <Orders />;
+      case "orders":
+        return section ? <Order /> : <Orders />;
       case "addresses":
         return section ? <AddressEdit /> : <AddressBook />;
+      case "reviews":
+        return section ? <ReviewProduct /> : <PendingReviews />;
       case "change-email":
         return <ChangeEmail />;
       case "change-password":

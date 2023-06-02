@@ -7,6 +7,7 @@ import {
   IconButton,
   Stack,
   Card,
+  Chip,
   CardContent,
   Tooltip,
   CardActions,
@@ -47,22 +48,19 @@ const AddressCard = ({ address, showDeleteButton }) => {
           {address.address}
         </Typography>
         <Typography variant="body1" sx={{ fontWeight: 500, fontSize: 16 }}>
-          {address.city}, {address.country}
+          {address.city} {address.postal_code}, {address.country}
         </Typography>
         <Typography variant="body1" sx={{ fontWeight: 500, fontSize: 16 }}>
           {address.phone_number}
         </Typography>
-        {address.is_default ? (
-          <Typography
-            variant="body1"
-            color="green"
-            sx={{ fontWeight: 500, fontSize: 16 }}
-          >
-            Default Address
-          </Typography>
-        ) : (
-          <br />
-        )}
+        <Chip
+          label="Default Address"
+          color="success"
+          sx={{
+            mt: 1,
+            visibility: address.is_default ? "visible" : "hidden",
+          }}
+        />
       </CardContent>
 
       <CardActions
