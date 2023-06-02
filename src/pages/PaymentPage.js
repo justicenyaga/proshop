@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Form, Button, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import {
+  Typography,
+  Radio,
+  Button,
+  RadioGroup,
+  FormControlLabel,
+} from "@mui/material";
 import FormContainer from "../components/FormContainer";
 import CheckoutSteps from "../components/CheckoutSteps";
 import { savePaymentMethod } from "../store/cart";
@@ -10,72 +16,69 @@ const PaymentPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { shippingAddress } = useSelector((state) => state.cart);
+  const { shippingAddress, cartItems } = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.user);
 
-  const [paymentMethod, setPaymentMethod] = useState("PayPal");
+  const [paymentMethod, setPaymentMethod] = useState("paypal");
 
   if (!shippingAddress.address) {
     navigate("/shipping");
   }
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-    }
+    !userInfo?.id && navigate("/login");
+    !cartItems?.length && navigate("/cart");
+    !shippingAddress?.address && navigate("/shipping-address");
   }, [navigate, userInfo]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleContinue = () => {
     dispatch(savePaymentMethod(paymentMethod));
     navigate("/placeorder");
   };
 
   return (
     <FormContainer>
-      <CheckoutSteps step1 step2 step3 />
+      <CheckoutSteps activeStep={3} />
 
-      <Form onSubmit={handleSubmit}>
-        <Form.Group>
-          <Form.Label as="legend">Select Method</Form.Label>
-          <Col
-            style={{
-              marginLeft: "1rem",
-            }}
-          >
-            <Form.Check
-              type="radio"
-              label="PayPal or Credit Card"
-              name="paymentMethod"
-              value="PayPal"
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            />
+      <Typography
+        variant="body1"
+        sx={{ fontWeight: 550, fontSize: 18, alignSelf: "start", my: 2 }}
+      >
+        Payment Method
+      </Typography>
 
-            <Form.Check
-              type="radio"
-              label="Cash on Delivery"
-              name="paymentMethod"
-              value="Cash on Delivery"
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            />
+      <RadioGroup
+        name="payment-method"
+        aria-labelledby="payment-method"
+        value={paymentMethod}
+        onChange={(e) => setPaymentMethod(e.target.value)}
+      >
+        <FormControlLabel
+          control={<Radio color="default" />}
+          label="PayPal or Credit Card"
+          value="paypal"
+        />
+        <FormControlLabel
+          control={<Radio color="default" />}
+          label="Cash on Delivery"
+          value="cash"
+        />
+        <FormControlLabel
+          disabled
+          control={<Radio color="default" />}
+          label="Lipa Na Mpesa (Coming Soon)"
+          value="mpesa"
+        />
+      </RadioGroup>
 
-            <Form.Check
-              type="radio"
-              label="Lipa Na Mpesa (Coming Soon)"
-              name="paymentMethod"
-              disabled={true}
-              value="mpesa"
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            />
-          </Col>
-        </Form.Group>
-
-        <br />
-
-        <Button variant="primary" type="submit">
-          Continue
-        </Button>
-      </Form>
+      <Button
+        variant="contained"
+        color="inherit"
+        sx={{ mt: 2, alignSelf: "end" }}
+        onClick={handleContinue}
+      >
+        Continue
+      </Button>
     </FormContainer>
   );
 };
