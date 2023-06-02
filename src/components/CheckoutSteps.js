@@ -1,50 +1,49 @@
 import React from "react";
-import { Nav } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
+import { useNavigate } from "react-router-dom";
+import {
+  Step,
+  StepLabel,
+  Stepper,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 
-const CheckoutSteps = ({ step1, step2, step3, step4 }) => {
+const CheckoutSteps = ({ activeStep }) => {
+  const navigate = useNavigate();
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const steps = ["Login", "Cart", "Address", "Payment", "Place Order"];
+
   return (
-    <Nav className="justify-content-center mb-4">
-      <Nav.Item>
-        {step1 ? (
-          <LinkContainer to="/login">
-            <Nav.Link>Login</Nav.Link>
-          </LinkContainer>
-        ) : (
-          <Nav.Link disabled>Login</Nav.Link>
-        )}
-      </Nav.Item>
-
-      <Nav.Item>
-        {step2 ? (
-          <LinkContainer to="/shipping">
-            <Nav.Link>Shipping</Nav.Link>
-          </LinkContainer>
-        ) : (
-          <Nav.Link disabled>Shipping</Nav.Link>
-        )}
-      </Nav.Item>
-
-      <Nav.Item>
-        {step3 ? (
-          <LinkContainer to="/payment">
-            <Nav.Link>Payment</Nav.Link>
-          </LinkContainer>
-        ) : (
-          <Nav.Link disabled>Payment</Nav.Link>
-        )}
-      </Nav.Item>
-
-      <Nav.Item>
-        {step4 ? (
-          <LinkContainer to="/placeorder">
-            <Nav.Link>Place Order</Nav.Link>
-          </LinkContainer>
-        ) : (
-          <Nav.Link disabled>Place Order</Nav.Link>
-        )}
-      </Nav.Item>
-    </Nav>
+    <Stepper activeStep={activeStep} alternativeLabel>
+      {steps.map((step) => (
+        <Step key={step}>
+          <StepLabel
+            StepIconProps={{
+              style: {
+                color:
+                  activeStep > steps.indexOf(step)
+                    ? "green"
+                    : activeStep === steps.indexOf(step)
+                    ? "blue"
+                    : "grey",
+                cursor:
+                  activeStep > steps.indexOf(step) ? "pointer" : "default",
+              },
+            }}
+            onClick={
+              activeStep > steps.indexOf(step)
+                ? () => navigate(`/${step.toLowerCase()}`)
+                : null
+            }
+          >
+            {step}
+          </StepLabel>
+        </Step>
+      ))}
+    </Stepper>
   );
 };
 
