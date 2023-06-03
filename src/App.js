@@ -21,6 +21,7 @@ import NotVerifiedPage from "./pages/NotVerifiedPage";
 import OrderListPage from "./pages/OrderListPage";
 import OrderPage from "./pages/OrderPage";
 import PageNotFound from "./pages/PageNotFound";
+import PaymentMethodPage from "./pages/PaymentMethodPage";
 import PaymentPage from "./pages/PaymentPage";
 import PlaceorderPage from "./pages/PlaceorderPage";
 import ProductEditPage from "./pages/ProductEditPage";
@@ -154,7 +155,7 @@ function App() {
                   path="/checkout/addresses"
                   element={<CheckoutAddresses />}
                 />
-                <Route path="/payment" element={<PaymentPage />} />
+                <Route path="/payment" element={<PaymentMethodPage />} />
                 <Route path="/placeorder" element={<PlaceorderPage />} />
                 <Route path="/order/:id" element={<OrderPage />} />
                 <Route path="/admin/users" element={<UserListPage />} />
