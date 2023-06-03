@@ -1,21 +1,42 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Row, Col, ListGroup, Image, Card, Button } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Message from "../components/Message";
 import CheckoutSteps from "../components/CheckoutSteps";
+import {
+  Typography,
+  List,
+  ListItem,
+  Stack,
+  Box,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+import { grey } from "@mui/material/colors";
+
 import { createOrder, resetOrder } from "../store/order";
-import { clearCart } from "../store/cart";
+import { resetUserOrders } from "../store/userOrders";
+import { resetOrderDetails } from "../store/orderDetails";
 
 const PlaceorderPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg"));
 
   const reduxState = useSelector((state) => state);
   const { cart } = reduxState;
-  const { orderObject, success, error } = reduxState.order;
+  const {
+    orderObject,
+    success,
+    loading: creatingOrder,
+    error,
+  } = reduxState.order;
   const { userInfo } = reduxState.user;
+  const { order: orderDetails } = reduxState.orderDetails;
 
   let itemsPrice = cart.cartItems
     .reduce((acc, item) => acc + item.price * item.quantity, 0)
@@ -32,22 +53,29 @@ const PlaceorderPage = () => {
   ).toFixed(2);
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-    } else {
-      if (success) {
-        navigate(`/order/${orderObject._id}`);
+    orderDetails?._id && dispatch(resetOrderDetails());
+
+    if (success) {
+      dispatch(resetUserOrders());
+      if (cart.paymentMethod === "paypal") {
+        navigate(`/pay/${orderObject._id}`);
         dispatch(resetOrder());
-        dispatch(clearCart());
-      }
+      } else navigate(`/profile/orders/${orderObject._id}`);
+    } else {
+      !userInfo && navigate("/login");
+      cart.cartItems?.length === 0 && navigate("/cart");
+      !cart.shippingAddress?._id && navigate("/shipping-address");
+      !cart.paymentMethod && navigate("/payment");
     }
-  }, [success, navigate, userInfo]);
+
+    error && toast.error(error);
+  }, [success, navigate, userInfo, cart, dispatch, error, orderObject]);
 
   const handlePlaceOrder = () => {
     dispatch(
       createOrder({
         orderItems: cart.cartItems,
-        shippingAddress: cart.shippingAddress,
+        address_id: cart.shippingAddress._id,
         paymentMethod: cart.paymentMethod,
         shippingPrice,
         taxPrice,
@@ -55,130 +83,271 @@ const PlaceorderPage = () => {
       })
     );
 
-    if (cart.paymentMethod === "Cash on Delivery")
-      toast.success("Order placed");
+    if (cart.paymentMethod === "cash") toast.success("Order placed");
   };
 
   return (
-    <div>
-      <CheckoutSteps step1 step2 step3 step4 />
+    <Box
+      sx={{
+        bgcolor: "white",
+        borderRadius: "10px",
+        boxShadow: 3,
+        width: isMobile ? "100%" : isTablet ? "90%" : "80%",
+        margin: "0 auto",
+        px: isTablet ? 5 : isMobile ? 2 : 8,
+        py: 3,
+      }}
+    >
+      <CheckoutSteps activeStep={4} />
 
-      <Row>
-        <Col md={8}>
-          <ListGroup variant="flush">
-            <ListGroup.Item>
-              <h2>Shipping</h2>
+      <Typography variant="body1" sx={{ mt: 2, fontWeight: 600, fontSize: 20 }}>
+        Order Summary
+      </Typography>
 
-              <p>
-                <strong>Shipping: </strong>
-                {cart.shippingAddress.address}, {cart.shippingAddress.city}
-                {"  "}
-                {cart.shippingAddress.postalCode},{"  "}
-                {cart.shippingAddress.country}
-              </p>
-            </ListGroup.Item>
+      <Stack direction={isMobile ? "column" : "row"} spacing={1}>
+        <Box
+          sx={{ width: isMobile ? "100%" : "70%" }}
+          p={1}
+          border={1}
+          borderColor={grey[300]}
+          borderRadius={1}
+          boxShadow={3}
+        >
+          <Typography variant="body1" sx={{ fontWeight: 550, fontSize: 16 }}>
+            Shipping Address
+          </Typography>
 
-            <ListGroup.Item>
-              <h2>Payment Method</h2>
+          <Typography
+            variant="body2"
+            component="p"
+            sx={{ fontWeight: 500, fontSize: 16 }}
+          >
+            {cart.shippingAddress.first_name} {cart.shippingAddress.last_name},
+            Tel: {cart.shippingAddress.phone_number}
+          </Typography>
 
-              <p>
-                <strong>Method: </strong>
-                {cart.paymentMethod}
-              </p>
-            </ListGroup.Item>
+          <Typography
+            variant="body2"
+            component="p"
+            sx={{ fontWeight: 500, fontSize: 16 }}
+          >
+            {cart.shippingAddress.address} - {cart.shippingAddress.city}{" "}
+            {cart.shippingAddress.postal_code},{"  "}
+            {cart.shippingAddress.country}
+          </Typography>
 
-            <ListGroup.Item>
-              <h2>Order Items</h2>
+          <Typography
+            variant="body1"
+            sx={{ mt: 2, fontWeight: 550, fontSize: 16 }}
+          >
+            Payment Method
+          </Typography>
 
-              {cart.cartItems.length === 0 ? (
-                <Message variant="info">Your cart is empty</Message>
-              ) : (
-                <ListGroup variant="flush">
-                  {cart.cartItems.map((item, index) => (
-                    <ListGroup.Item key={index}>
-                      <Row>
-                        <Col md={1}>
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fluid
-                            rounded
-                          />
-                        </Col>
+          <Typography
+            variant="body2"
+            component="p"
+            sx={{ fontWeight: 500, fontSize: 16 }}
+          >
+            {cart.paymentMethod === "paypal"
+              ? "Paypal or Credit Card"
+              : cart.paymentMethod === "cash"
+              ? "Cash on Delivery"
+              : ""}
+          </Typography>
 
-                        <Col>
-                          <Link to={`/product/${item.productId}`}>
-                            {item.name}
-                          </Link>
-                        </Col>
+          <Typography
+            variant="body1"
+            sx={{ mt: 2, fontWeight: 550, fontSize: 16 }}
+          >
+            Order Items
+          </Typography>
 
-                        <Col md={4}>
-                          {item.quantity} X ${item.price} = $
-                          {(item.quantity * item.price).toFixed(2)}
-                        </Col>
-                      </Row>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              )}
-            </ListGroup.Item>
-          </ListGroup>
-        </Col>
+          <List>
+            {cart.cartItems.map((item) => (
+              <ListItem
+                key={item.productId}
+                sx={{
+                  width: "100%",
+                  mb: 0.8,
+                  bgcolor: "white",
+                  borderRadius: "5px",
+                }}
+              >
+                <Stack direction="column" width="100%">
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    width="100%"
+                    height="fit-content"
+                    sx={{ cursor: "pointer" }}
+                    spacing={1}
+                    onClick={() => navigate(`/product/${item.productId}`)}
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      style={{ minHeight: "60px" }}
+                      width={isMobile ? "20%" : "10%"}
+                      loading="lazy"
+                    />
 
-        <Col md={4}>
-          <Card>
-            <ListGroup variant="flush">
-              <ListGroup.Item>
-                <h2>Order Summary</h2>
-              </ListGroup.Item>
+                    <Stack direction="column" width="100%">
+                      <Stack
+                        width="100%"
+                        direction={{ xs: "column", md: "row" }}
+                        alignContent="center"
+                        justifyContent="space-between"
+                      >
+                        <Typography
+                          variant="body2"
+                          component="div"
+                          sx={{ fontSize: isMobile ? 13 : 18, fontWeight: 500 }}
+                        >
+                          {item.name}
+                        </Typography>
 
-              <ListGroup.Item>
-                <Row>
-                  <Col>Items: </Col>
-                  <Col>${itemsPrice}</Col>
-                </Row>
-              </ListGroup.Item>
+                        <Typography
+                          variant="body2"
+                          component="div"
+                          sx={{ fontSize: isMobile ? 12 : 18, fontWeight: 520 }}
+                        >
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </Typography>
+                      </Stack>
 
-              <ListGroup.Item>
-                <Row>
-                  <Col>Shipping: </Col>
-                  <Col>${shippingPrice}</Col>
-                </Row>
-              </ListGroup.Item>
+                      <Typography
+                        variant="body2"
+                        component="div"
+                        sx={{
+                          fontSize: isMobile ? 10 : 15,
+                        }}
+                      >
+                        {item.quantity} x {item.price}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
 
-              <ListGroup.Item>
-                <Row>
-                  <Col>Tax: </Col>
-                  <Col>${taxPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-
-              <ListGroup.Item>
-                <Row>
-                  <Col>Total: </Col>
-                  <Col>${totalPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-
-              <ListGroup.Item>
-                {error && <Message variant="danger">{error}</Message>}
-              </ListGroup.Item>
-
-              <ListGroup.Item>
-                <Button
-                  type="button"
-                  className="w-100"
-                  disabled={cart.cartItems.length === 0}
-                  onClick={handlePlaceOrder}
+        <Box
+          sx={{ width: isMobile ? "100%" : "30%" }}
+          p={1}
+          border={1}
+          borderColor={grey[300]}
+          borderRadius={1}
+          boxShadow={3}
+          height="fit-content"
+        >
+          <List
+            disablePadding
+            sx={{
+              "& .MuiListItem-root": {
+                p: 0,
+              },
+            }}
+          >
+            <ListItem>
+              <Stack direction="row" alignItems="center" width="100%">
+                <Typography
+                  variant="body2"
+                  component="div"
+                  width="50%"
+                  sx={{ fontSize: 16, fontWeight: 550 }}
                 >
-                  Place Order
-                </Button>
-              </ListGroup.Item>
-            </ListGroup>
-          </Card>
-        </Col>
-      </Row>
-    </div>
+                  Items:
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  component="div"
+                  width="50%"
+                  sx={{ fontSize: 16, fontWeight: 500 }}
+                >
+                  ${itemsPrice}
+                </Typography>
+              </Stack>
+            </ListItem>
+            <ListItem>
+              <Stack direction="row" alignItems="center" width="100%">
+                <Typography
+                  variant="body2"
+                  component="div"
+                  width="50%"
+                  sx={{ fontSize: 16, fontWeight: 550 }}
+                >
+                  Shipping:
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  component="div"
+                  width="50%"
+                  sx={{ fontSize: 16, fontWeight: 500 }}
+                >
+                  ${shippingPrice}
+                </Typography>
+              </Stack>
+            </ListItem>
+            <ListItem>
+              <Stack direction="row" alignItems="center" width="100%">
+                <Typography
+                  variant="body2"
+                  component="div"
+                  width="50%"
+                  sx={{ fontSize: 16, fontWeight: 550 }}
+                >
+                  Tax:
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  component="div"
+                  width="50%"
+                  sx={{ fontSize: 16, fontWeight: 500 }}
+                >
+                  ${taxPrice}
+                </Typography>
+              </Stack>
+            </ListItem>
+            <ListItem>
+              <Stack direction="row" alignItems="center" width="100%">
+                <Typography
+                  variant="body2"
+                  component="div"
+                  width="50%"
+                  sx={{ fontSize: 16, fontWeight: 550 }}
+                >
+                  Total:
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  component="div"
+                  width="50%"
+                  sx={{ fontSize: 16, fontWeight: 500 }}
+                >
+                  ${totalPrice}
+                </Typography>
+              </Stack>
+            </ListItem>
+            <ListItem sx={{ mt: 1 }}>
+              <LoadingButton
+                variant="contained"
+                color="inherit"
+                fullWidth
+                onClick={handlePlaceOrder}
+                loading={creatingOrder}
+              >
+                Place Order
+              </LoadingButton>
+            </ListItem>
+          </List>
+        </Box>
+      </Stack>
+    </Box>
   );
 };
 
