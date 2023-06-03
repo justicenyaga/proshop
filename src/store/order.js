@@ -45,11 +45,11 @@ const {
 export default slice.reducer;
 
 export const createOrder = (order) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(

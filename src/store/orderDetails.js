@@ -29,6 +29,21 @@ const slice = createSlice({
       orderDetails.error = action.payload;
       orderDetails.loading = false;
     },
+
+    orderDetailsReset: (orderDetails, action) => {
+      orderDetails.order = {
+        orderItems: [],
+        shippingAddress: {},
+        paymentMethod: "",
+        user: {},
+      };
+      orderDetails.loading = false;
+      orderDetails.error = null;
+    },
+
+    errorCleared: (orderDetails, action) => {
+      orderDetails.error = null;
+    },
   },
 });
 
@@ -36,15 +51,17 @@ const {
   orderDetailsRequested,
   orderDetailsReceived,
   orderDetailsRequestFailed,
+  orderDetailsReset,
+  errorCleared,
 } = slice.actions;
 export default slice.reducer;
 
 export const loadOrderDetails = (orderId) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -57,4 +74,12 @@ export const loadOrderDetails = (orderId) => (dispatch, getState) => {
       onError: orderDetailsRequestFailed.type,
     })
   );
+};
+
+export const resetOrderDetails = () => (dispatch) => {
+  dispatch({ type: orderDetailsReset.type });
+};
+
+export const clearError = () => (dispatch) => {
+  dispatch({ type: errorCleared.type });
 };

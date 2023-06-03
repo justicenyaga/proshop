@@ -58,11 +58,11 @@ export default slice.reducer;
 
 //Actions
 export const loadOrders = () => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -78,11 +78,11 @@ export const loadOrders = () => (dispatch, getState) => {
 };
 
 export const deliverOrder = (orderId) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -99,3 +99,25 @@ export const deliverOrder = (orderId) => (dispatch, getState) => {
 export const deleteOrderDeliver = () => (dispatch) => {
   dispatch({ type: orderDeliverDeleted.type });
 };
+
+export const deliverMultipleOrders =
+  (orderIds) => async (dispatch, getState) => {
+    const token = JSON.parse(localStorage.getItem("access"));
+
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `JWT ${token}`,
+    };
+
+    orderIds.forEach(async (orderId) => {
+      await dispatch(
+        apiCallBegun({
+          url: `/api/orders/${orderId}/deliver/`,
+          method: "put",
+          data: {},
+          headers,
+          onSuccess: orderDelivered.type,
+        })
+      );
+    });
+  };

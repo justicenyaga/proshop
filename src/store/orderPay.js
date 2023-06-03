@@ -41,11 +41,11 @@ const {
 export default slice.reducer;
 
 export const payOrder = (orderId, paymentResult) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -63,4 +63,27 @@ export const payOrder = (orderId, paymentResult) => (dispatch, getState) => {
 
 export const resetOrderPay = () => (dispatch) => {
   dispatch({ type: orderPayResetted.type });
+};
+
+export const payMultiple = (orderIds) => async (dispatch, getState) => {
+  const token = JSON.parse(localStorage.getItem("access"));
+
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `JWT ${token}`,
+  };
+
+  orderIds.forEach(async (orderId) => {
+    await dispatch(
+      apiCallBegun({
+        url: `/api/orders/${orderId}/pay/`,
+        method: "put",
+        data: {},
+        headers,
+        onStart: orderPayRequested.type,
+        onSuccess: orderPaySuccess.type,
+        onError: orderPayRequestFailed.type,
+      })
+    );
+  });
 };
