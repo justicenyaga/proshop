@@ -23,4 +23,16 @@ const addressImageUrl =
     ? "https://proshop.blob.core.windows.net/proshop-container/address.png"
     : "/siteImages/address.png";
 
-export { logoUrl, notFoundUrl, commentImageUrl, cartImageUrl, addressImageUrl };
+const orderImageUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://proshop.blob.core.windows.net/proshop-container/no-order.jpg"
+    : "/siteImages/no-order.jpg";
+
+export {
+  logoUrl,
+  notFoundUrl,
+  commentImageUrl,
+  cartImageUrl,
+  addressImageUrl,
+  orderImageUrl,
+};

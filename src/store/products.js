@@ -106,6 +106,11 @@ export const loadProducts =
 
     let byPassCache = !(searchQuery === srcQuery);
 
+    if (searchQuery === "refresh-products") {
+      byPassCache = true;
+      searchQuery = "";
+    }
+
     if (diffInMinutes < 10 && !byPassCache) return;
 
     dispatch(
