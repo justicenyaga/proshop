@@ -660,9 +660,91 @@ const HomePageHotCategoriesSkeleton = () => {
   );
 };
 
+const OrderItemSkeleton = ({ isMobile }) => {
+  return (
+    <Box
+      border={1}
+      borderColor="divider"
+      borderRadius={2}
+      p={isMobile ? 1 : 2}
+      mt={1}
+      sx={isMobile ? { cursor: "pointer" } : {}}
+    >
+      <Stack
+        direction="row"
+        alignItems="center"
+        width="100%"
+        height="fit-content"
+        spacing={1}
+      >
+        <Skeleton
+          animation="wave"
+          variant="rectangular"
+          sx={{
+            minHeight: "60px",
+            width: isMobile ? "20%" : "10%",
+            height: "100%",
+          }}
+        />
+
+        <Box
+          display="flex"
+          flexDirection="row"
+          justifyContent="space-between"
+          width="100%"
+          height="100%"
+        >
+          <Stack direction="column" width="100%" height="100%">
+            <Skeleton animation="wave" variant="text" width="80%" />
+
+            <Typography
+              variant="body2"
+              component="div"
+              sx={{
+                fontSize: isMobile ? 11 : 14,
+                fontWeight: 450,
+                mb: 1,
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center">
+                Order No:{" "}
+                <Skeleton animation="wave" variant="text" width="40px" />
+              </Stack>
+            </Typography>
+
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="150px"
+              height="20px"
+              sx={{ borderRadius: "10px" }}
+            />
+          </Stack>
+
+          {!isMobile && (
+            <Button
+              color="inherit"
+              sx={{
+                width: "120px",
+                fontWeight: 550,
+                alignSelf: "start",
+                mt: -1,
+              }}
+              disabled
+            >
+              <Skeleton animation="wave" variant="text" width="90%" />
+            </Button>
+          )}
+        </Box>
+      </Stack>
+    </Box>
+  );
+};
+
 export {
   ProductSkeleton,
   ProductPageSkeleton,
   HomePageHeaderCategorySkeleton,
   HomePageHotCategoriesSkeleton,
+  OrderItemSkeleton,
 };
