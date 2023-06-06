@@ -23,6 +23,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import UsersIcon from "@mui/icons-material/PeopleAlt";
 import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import OrdersIcon from "@mui/icons-material/LocalShipping";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
 
 import NavMenuItem from "./NavMenuItem";
 
@@ -330,6 +331,14 @@ function BottomBar() {
           label="Profile"
           icon={<PersonIcon fontSize="small" />}
           route="/profile"
+          handleClose={handleCloseProfile}
+          props={{ dense: true }}
+        />
+        <Divider sx={{ margin: "0" }} />
+        <NavMenuItem
+          label="Orders"
+          icon={<Inventory2Icon fontSize="small" />}
+          route="/profile/orders"
           handleClose={handleCloseProfile}
           props={{ dense: true }}
         />

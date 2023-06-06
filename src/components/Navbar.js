@@ -354,7 +354,7 @@ function Navbar() {
                   <NavMenuItem
                     label="Orders"
                     icon={<Inventory2Icon fontSize="small" />}
-                    route="/orders"
+                    route="/profile/orders"
                     handleClose={handleCloseProfile}
                   />
                   <NavMenuItem
