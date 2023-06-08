@@ -12,6 +12,7 @@ import userDetailsReducer from "./userDetails";
 import userProfileUpdateReducer from "./userProfileUpdate";
 import userListReducer from "./userList";
 import userOrdersReducer from "./userOrders";
+import userReviewsReducer from "./userReviews";
 
 import orderReducer from "./order";
 import orderDetailsReducer from "./orderDetails";
@@ -28,6 +29,7 @@ export default combineReducers({
   userDetails: userDetailsReducer,
   userProfileUpdate: userProfileUpdateReducer,
   userOrders: userOrdersReducer,
+  userReviews: userReviewsReducer,
   order: orderReducer,
   orderDetails: orderDetailsReducer,
   orderPay: orderPayReducer,
