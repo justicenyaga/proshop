@@ -348,7 +348,7 @@ const ProductPage = () => {
                               type="number"
                               InputLabelProps={{ shrink: true }}
                               variant="outlined"
-                              disabled={product.countInStock === 0}
+                              disabled={product.countInStock <= 0}
                               size="small"
                               value={quantity}
                               onChange={handleQuantityChange}
@@ -426,7 +426,7 @@ const ProductPage = () => {
                           variant="contained"
                           color="inherit"
                           fullWidth
-                          disabled={productStock === 0}
+                          disabled={productStock <= 0}
                           sx={{
                             "&:disabled": {
                               cursor: "not-allowed",
@@ -788,7 +788,9 @@ const ProductPage = () => {
                               fontWeight: 500,
                             }}
                           >
-                            {review.createdAt.substring(0, 10)}
+                            {new Date(review.createdAt).toLocaleDateString(
+                              "en-GB"
+                            )}
                           </Typography>
 
                           <Stack
