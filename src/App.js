@@ -158,7 +158,6 @@ function App() {
                 <Route path="/payment" element={<PaymentMethodPage />} />
                 <Route path="/placeorder" element={<PlaceorderPage />} />
                 <Route path="/pay/:id" element={<PaymentPage />} />
-                <Route path="/order/:id" element={<OrderPage />} />
                 <Route path="/admin/users" element={<UserListPage />} />
                 <Route path="/admin/users/:id" element={<UserEditPage />} />
                 <Route path="/admin/products" element={<ProductListPage />} />
@@ -167,6 +166,7 @@ function App() {
                   element={<ProductEditPage />}
                 />
                 <Route path="/admin/orders" element={<OrderListPage />} />
+                <Route path="/admin/orders/:id" element={<OrderPage />} />
                 <Route path="/page404" element={<PageNotFound />} />
                 <Route path="*" element={<PageNotFound />} />
               </Routes>
