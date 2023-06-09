@@ -14,6 +14,8 @@ import {
   Stack,
   TextField,
   Rating,
+  TableRow,
+  TableCell,
   Breadcrumbs,
   useTheme,
   useMediaQuery,
@@ -741,10 +743,23 @@ const OrderItemSkeleton = ({ isMobile }) => {
   );
 };
 
+const TableRowSkeleton = ({ columns }) => {
+  return (
+    <TableRow>
+      {Array.from({ length: columns }, (_, index) => (
+        <TableCell key={index}>
+          <Skeleton animation="wave" variant="text" />
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+};
+
 export {
   ProductSkeleton,
   ProductPageSkeleton,
   HomePageHeaderCategorySkeleton,
   HomePageHotCategoriesSkeleton,
   OrderItemSkeleton,
+  TableRowSkeleton,
 };
