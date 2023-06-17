@@ -39,11 +39,16 @@ const slice = createSlice({
 
     userUpdated: (userList, action) => {
       userList.successUpdate = true;
-      window.location.reload();
+      userList.users = userList.users.map((user) =>
+        user.id === action.payload.id ? action.payload : user
+      );
     },
 
     userListReseted: (userList, action) => {
       userList.users = [];
+      userList.successDelete = false;
+      userList.successUpdate = false;
+      userList.error = null;
     },
   },
 });
@@ -59,11 +64,11 @@ const {
 export default slice.reducer;
 
 export const loadUsers = () => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -83,11 +88,11 @@ export const resetUserList = () => (dispatch) => {
 };
 
 export const deleteUser = (userId) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -101,20 +106,41 @@ export const deleteUser = (userId) => (dispatch, getState) => {
 };
 
 export const updateUser = (user) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
     apiCallBegun({
-      url: `/api/users/${user._id}/update/`,
+      url: `/api/users/${user.id}/update/`,
       method: "put",
       data: user,
       headers,
       onSuccess: userUpdated.type,
     })
   );
+};
+
+export const deleteMultipleUsers = (userIds) => async (dispatch, getState) => {
+  const token = JSON.parse(localStorage.getItem("access"));
+
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `JWT ${token}`,
+  };
+
+  userIds.forEach(async (userId) => {
+    await dispatch(
+      apiCallBegun({
+        url: `/api/users/${userId}/delete/`,
+        method: "delete",
+        data: {},
+        headers,
+        onSuccess: userDeleted.type,
+      })
+    );
+  });
 };

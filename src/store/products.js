@@ -78,6 +78,10 @@ const slice = createSlice({
       products.errorTopRated = action.payload;
       products.loadingTopRated = false;
     },
+
+    successDeleteReset: (products, action) => {
+      products.successDelete = false;
+    },
   },
 });
 
@@ -93,6 +97,7 @@ const {
   topRatedProductsRequested,
   topRatedProductsReceived,
   topRatedProductsRequestFailed,
+  successDeleteReset,
 } = slice.actions;
 export default slice.reducer;
 
@@ -126,11 +131,11 @@ export const loadProducts =
   };
 
 export const createProduct = () => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -145,11 +150,11 @@ export const createProduct = () => (dispatch, getState) => {
 };
 
 export const updateProduct = (product) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -168,11 +173,11 @@ export const removeCreatedProduct = () => (dispatch) => {
 };
 
 export const deleteProduct = (productId) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -195,4 +200,29 @@ export const loadTopRatedProducts = () => (dispatch) => {
       onError: topRatedProductsRequestFailed.type,
     })
   );
+};
+
+export const deleteMultipleProducts = (productsIds) => (dispatch) => {
+  const token = JSON.parse(localStorage.getItem("access"));
+
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `JWT ${token}`,
+  };
+
+  productsIds.forEach(async (productId) => {
+    await dispatch(
+      apiCallBegun({
+        url: `/api/products/${productId}/delete/`,
+        method: "delete",
+        data: {},
+        headers,
+        onSuccess: productDeleted.type,
+      })
+    );
+  });
+};
+
+export const resetSuccessDelete = () => (dispatch) => {
+  dispatch({ type: successDeleteReset.type });
 };

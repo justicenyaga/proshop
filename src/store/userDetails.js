@@ -24,19 +24,28 @@ const slice = createSlice({
       userDetails.error = action.payload;
       userDetails.loading = false;
     },
+
+    userDetailsCleared: (userDetails, action) => {
+      userDetails.user = {};
+      userDetails.error = null;
+    },
   },
 });
 
-const { userDetailsRequested, userDetailsReceived, userDetailsRequestFailed } =
-  slice.actions;
+const {
+  userDetailsRequested,
+  userDetailsReceived,
+  userDetailsRequestFailed,
+  userDetailsCleared,
+} = slice.actions;
 export default slice.reducer;
 
 export const getUserDetails = (id) => (dispatch, getState) => {
-  const { token } = getState().user.userInfo;
+  const token = JSON.parse(localStorage.getItem("access"));
 
   const headers = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: `JWT ${token}`,
   };
 
   dispatch(
@@ -49,4 +58,8 @@ export const getUserDetails = (id) => (dispatch, getState) => {
       onError: userDetailsRequestFailed.type,
     })
   );
+};
+
+export const clearUserDetails = () => (dispatch) => {
+  dispatch({ type: userDetailsCleared.type });
 };
