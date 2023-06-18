@@ -7,6 +7,7 @@ import {
   InputAdornment,
   Typography,
   Stack,
+  Box,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
@@ -16,6 +17,7 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+import FormContainer from "../components/FormContainer";
 import FormTextField from "../components/FormTextField";
 
 import httpService from "../utils/httpService";
@@ -59,7 +61,7 @@ const ProductEditPage = () => {
     subCategories.filter((sub_cat) => sub_cat.category.name === category);
 
   useEffect(() => {
-    if (!userInfo.isAdmin) {
+    if (!userInfo.is_staff) {
       navigate("/login");
     } else {
       if (successCreate) dispatch(removeCreatedProduct());
@@ -148,162 +150,154 @@ const ProductEditPage = () => {
   };
 
   return (
-    <div>
-      <IconButton onClick={() => navigate(-1)} size="large" aria-label="back">
-        <ArrowBackIcon fontSize="large" />
-      </IconButton>
+    <FormContainer>
+      <Box justifyContent="left" width="100%">
+        <Stack direction="row" alignItems="center" mb={1} spacing={2}>
+          <IconButton sx={{ p: 0 }} onClick={() => navigate(-1)}>
+            <ArrowBackIcon />
+          </IconButton>
 
-      {error && toast.error(error)}
-
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          width: isMobile ? "100%" : isTablet ? "80%" : "40%",
-          margin: "0 auto",
-        }}
-      >
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{ fontWeight: 550 }}
-        >
-          Edit Product
-        </Typography>
-
-        <FormTextField
-          label="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          loading={loading}
-        />
-
-        <FormTextField
-          label="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          loading={loading}
-          InputProps={{
-            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-          }}
-        />
-
-        <FormTextField
-          label="Image"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          loading={loading}
-          helperText={uploadHelperText && uploadHelperText}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end" sx={{ marginRight: "-10px" }}>
-                <LoadingButton
-                  variant="contained"
-                  loading={uploading}
-                  loadingPosition="start"
-                  color="inherit"
-                  component="label"
-                  startIcon={<FileUploadIcon />}
-                  sx={{ fontWeight: 550, marginRight: 0 }}
-                >
-                  {isMobile ? "" : "Upload"}
-
-                  <input
-                    type="file"
-                    hidden
-                    onChange={handleUploadFile}
-                    accept="image/*"
-                  />
-                </LoadingButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        <FormTextField
-          label="Brand"
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-          loading={loading}
-        />
-
-        <FormTextField
-          label="Category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          loading={loading}
-          isSelect
-          options={categories.length ? categories : []}
-        />
-
-        <FormTextField
-          label="Sub Category"
-          value={subCategory}
-          onChange={(e) => setSubCategory(e.target.value)}
-          loading={loading}
-          isSelect
-          options={
-            selectedCategorySubCategories.length
-              ? selectedCategorySubCategories
-              : []
-          }
-        />
-
-        <FormTextField
-          label="Count In Stock"
-          value={countInStock}
-          onChange={(e) => setCountInStock(e.target.value)}
-          loading={loading}
-        />
-
-        <FormTextField
-          label="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          loading={loading}
-          isTextArea
-        />
-
-        <Stack
-          direction="row"
-          spacing={3}
-          height={50}
-          width="100%"
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            mt: 2,
-          }}
-        >
-          <LoadingButton
-            loading={loading}
-            variant="contained"
-            color="inherit"
-            loadingPosition="start"
-            size={isMobile ? "small" : isTablet ? "medium" : "large"}
-            type="submit"
-            startIcon={<SaveIcon />}
-          >
-            Save
-          </LoadingButton>
-
-          <LoadingButton
-            loading={loading}
-            variant="contained"
-            color="error"
-            loadingPosition="start"
-            size={isMobile ? "small" : isTablet ? "medium" : "large"}
-            onClick={() => handleDeleteProduct(product._id)}
-            startIcon={<DeleteIcon />}
-          >
-            Delete
-          </LoadingButton>
+          <Typography variant="body1" sx={{ fontWeight: 550, fontSize: 18 }}>
+            Product Details
+          </Typography>
         </Stack>
-      </form>
-    </div>
+
+        {error && toast.error(error)}
+
+        <form onSubmit={handleSubmit}>
+          <FormTextField
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            loading={loading}
+          />
+
+          <FormTextField
+            label="Price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            loading={loading}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">$</InputAdornment>
+              ),
+            }}
+          />
+
+          <FormTextField
+            label="Image"
+            value={image}
+            onChange={(e) => setImage(e.target.value)}
+            loading={loading}
+            helperText={uploadHelperText && uploadHelperText}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end" sx={{ marginRight: "-10px" }}>
+                  <LoadingButton
+                    variant="contained"
+                    loading={uploading}
+                    loadingPosition="start"
+                    color="inherit"
+                    component="label"
+                    startIcon={<FileUploadIcon />}
+                    sx={{ fontWeight: 550, marginRight: 0 }}
+                  >
+                    {isMobile ? "" : "Upload"}
+
+                    <input
+                      type="file"
+                      hidden
+                      onChange={handleUploadFile}
+                      accept="image/*"
+                    />
+                  </LoadingButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <FormTextField
+            label="Brand"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            loading={loading}
+          />
+
+          <FormTextField
+            label="Category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            loading={loading}
+            isSelect
+            options={categories.length ? categories : []}
+          />
+
+          <FormTextField
+            label="Sub Category"
+            value={subCategory}
+            onChange={(e) => setSubCategory(e.target.value)}
+            loading={loading}
+            isSelect
+            options={
+              selectedCategorySubCategories.length
+                ? selectedCategorySubCategories
+                : []
+            }
+          />
+
+          <FormTextField
+            label="Count In Stock"
+            value={countInStock}
+            onChange={(e) => setCountInStock(e.target.value)}
+            loading={loading}
+          />
+
+          <FormTextField
+            label="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            loading={loading}
+            isTextArea
+          />
+
+          <Stack
+            direction="row"
+            spacing={3}
+            height={50}
+            width="100%"
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              mt: 2,
+            }}
+          >
+            <LoadingButton
+              loading={loading}
+              variant="contained"
+              color="inherit"
+              loadingPosition="start"
+              size={isMobile ? "small" : isTablet ? "medium" : "large"}
+              type="submit"
+              startIcon={<SaveIcon />}
+            >
+              Save
+            </LoadingButton>
+
+            <LoadingButton
+              loading={loading}
+              variant="contained"
+              color="error"
+              loadingPosition="start"
+              size={isMobile ? "small" : isTablet ? "medium" : "large"}
+              onClick={() => handleDeleteProduct(product._id)}
+              startIcon={<DeleteIcon />}
+            >
+              Delete
+            </LoadingButton>
+          </Stack>
+        </form>
+      </Box>
+    </FormContainer>
   );
 };
 
