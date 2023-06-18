@@ -30,7 +30,7 @@ const headCells = [
 
 const bodyCells = [
   { key: "_id" },
-  { key: "user", first: "first_name", last: "last_name" },
+  { key: "user", first_name: "first_name", last_name: "last_name" },
   { key: "createdAt", type: "date" },
   { key: "totalPrice" },
   { key: "paymentMethod" },
@@ -197,7 +197,10 @@ const OrderListPage = () => {
       bodyCells={bodyCells}
       selected={selected}
       setSelected={setSelected}
-      toolBarActions={[MarkOrdersAsPaidButton, MarkOrdersAsDeliveredButton]}
+      toolBarSelectedActions={[
+        MarkOrdersAsPaidButton,
+        MarkOrdersAsDeliveredButton,
+      ]}
       rowActionButtons={getActionButtons(
         orders,
         handleViewOrder,
