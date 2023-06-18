@@ -1,20 +1,52 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Form, Button } from "react-bootstrap";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Alert,
+  CircularProgress,
+  Typography,
+  IconButton,
+  Button,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  Box,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SaveIcon from "@mui/icons-material/Save";
+import { toast } from "react-toastify";
+
 import FormContainer from "../components/FormContainer";
-import Message from "../components/Message";
-import Loader from "../components/Loader";
-import { getUserDetails } from "../store/userDetails";
+
+import { getUserDetails, clearUserDetails } from "../store/userDetails";
 import { updateUser } from "../store/userList";
+
+const renderCustomTextField = (label, value, setValue, type = "text") => {
+  return (
+    <TextField
+      label={label}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      type={type}
+      variant="outlined"
+      required
+      fullWidth
+      size="small"
+      sx={{ marginBottom: 1 }}
+    />
+  );
+};
 
 const UserEditPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id: userId } = useParams();
 
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [isActive, setIsActive] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const reduxState = useSelector((state) => state);
@@ -23,78 +55,109 @@ const UserEditPage = () => {
   const { userInfo } = reduxState.user;
 
   useEffect(() => {
-    if (!userInfo.isAdmin) {
-      navigate("/login");
-    } else {
-      if (!user.name || user._id !== Number(userId)) {
-        dispatch(getUserDetails(userId));
-      } else {
-        setName(user.name);
-        setEmail(user.email);
-        setIsAdmin(user.isAdmin);
-      }
+    !userInfo.is_staff && navigate("/login");
+
+    if (!user.id || user.id !== Number(userId))
+      dispatch(getUserDetails(userId));
+    else {
+      setFirstName(user.first_name);
+      setLastName(user.last_name);
+      setEmail(user.email);
+      setIsActive(user.is_active);
+      setIsAdmin(user.is_staff);
     }
-  }, [user, dispatch, userId]);
+  }, [dispatch, navigate, user, userId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(updateUser({ _id: user._id, name, email, isAdmin }));
+
+    const updatedUser = {
+      id: user.id,
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      isActive,
+      isAdmin,
+    };
+
+    dispatch(updateUser(updatedUser));
+    toast.success("User updated successfully");
     navigate("/admin/users");
+    dispatch(clearUserDetails());
+  };
+
+  const backButtonHandler = () => {
+    navigate(-1);
+    dispatch(clearUserDetails());
   };
 
   return (
-    <div>
-      <Link to="/admin/users" className="btn btn-light">
-        Go Back
-      </Link>
+    <FormContainer>
+      <Box justifyContent="left" width="100%">
+        <Stack direction="row" alignItems="center" mb={1} spacing={2}>
+          <IconButton sx={{ p: 0 }} onClick={backButtonHandler}>
+            <ArrowBackIcon />
+          </IconButton>
 
-      <FormContainer>
-        <h1>Edit User</h1>
+          <Typography variant="body1" sx={{ fontWeight: 550, fontSize: 18 }}>
+            User Details
+          </Typography>
+        </Stack>
 
         {loading ? (
-          <Loader />
+          <Box display="flex" justifyContent="center" width="100%">
+            <CircularProgress color="inherit" size={150} />
+          </Box>
         ) : error ? (
-          <Message variant="danger">{error}</Message>
+          <Alert severity="error">{error}</Alert>
         ) : (
-          <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="name">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={name}
-                placeholder="Enter name"
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group controlId="email">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                value={email}
-                placeholder="Enter email"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Form.Group>
+          <form onSubmit={handleSubmit}>
+            <Stack direction="row" spacing={0.5} justifyContent="space-between">
+              {renderCustomTextField("First Name", firstName, setFirstName)}
+              {renderCustomTextField("Last Name", lastName, setLastName)}
+            </Stack>
 
-            <br />
-            <Form.Group controlId="isdmin">
-              <Form.Check
-                type="checkbox"
+            {renderCustomTextField("Email", email, setEmail, "email")}
+
+            <Stack direction="row" spacing={2} alignItems="center">
+              <FormControlLabel
+                label="Is Active"
+                control={
+                  <Checkbox
+                    checked={isActive}
+                    color="default"
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    inputProps={{ "aria-label": "primary checkbox" }}
+                  />
+                }
+              />
+
+              <FormControlLabel
                 label="Is Admin"
-                checked={isAdmin}
-                onChange={(e) => setIsAdmin(e.target.checked)}
+                control={
+                  <Checkbox
+                    checked={isAdmin}
+                    color="default"
+                    onChange={(e) => setIsAdmin(e.target.checked)}
+                    inputProps={{ "aria-label": "primary checkbox" }}
+                  />
+                }
               />
-            </Form.Group>
+            </Stack>
 
-            <br />
-
-            <Button type="submit" variant="primary">
+            <Button
+              type="submit"
+              color="inherit"
+              variant="contained"
+              startIcon={<SaveIcon />}
+              sx={{ mt: 2 }}
+            >
               Update
             </Button>
-          </Form>
+          </form>
         )}
-      </FormContainer>
-    </div>
+      </Box>
+    </FormContainer>
   );
 };
 
