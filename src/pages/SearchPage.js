@@ -36,7 +36,7 @@ const SearchPage = () => {
   let uniqueCategories = [];
   if (allCategories.length) {
     allCategories.forEach((category) => {
-      if (!uniqueCategories.find((cat) => cat.name === category.name)) {
+      if (!uniqueCategories.find((cat) => cat?.name === category?.name)) {
         uniqueCategories.push(category);
       }
     });

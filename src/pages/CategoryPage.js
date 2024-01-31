@@ -89,11 +89,11 @@ const CategoryPage = () => {
 
     if (subcategory && productsList.length) {
       setProducts(
-        productsList.filter((product) => product.category.slug === subcategory)
+        productsList.filter((product) => product.category?.slug === subcategory)
       );
     } else if (!subcategory && productsList.length) {
       setProducts(
-        productsList.filter((product) => product.category.cat_slug === category)
+        productsList.filter((product) => product.category?.cat_slug === category)
       );
     }
   }, [dispatch, category, subcategory, navigate, productsList.length]);
